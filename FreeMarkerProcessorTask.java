@@ -87,3 +87,7 @@ public class FreeMarkerProcessorTask extends DefaultTask {
 
     }
 }
+
+<#list dependencies as dependecy>
+RUNTIME_CLASSPATH="$RUNTIME_CLASSPATH:${dependecy}"
+</#list>
