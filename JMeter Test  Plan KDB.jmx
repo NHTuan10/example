@@ -8,19 +8,19 @@
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments">
-          <elementProp name="query" elementType="Argument">
-            <stringProp name="Argument.name">query</stringProp>
-            <stringProp name="Argument.value">flip ([] c1:10 20 30; c2:1.1 2.2 3.3)</stringProp>
+          <elementProp name="scriptPath" elementType="Argument">
+            <stringProp name="Argument.name">scriptPath</stringProp>
+            <stringProp name="Argument.value">C:/OpenSource/KDB/script.q</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="numberOfConcurrentUsers" elementType="Argument">
             <stringProp name="Argument.name">numberOfConcurrentUsers</stringProp>
-            <stringProp name="Argument.value">100</stringProp>
+            <stringProp name="Argument.value">10</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
           <elementProp name="requestPerUser" elementType="Argument">
             <stringProp name="Argument.name">requestPerUser</stringProp>
-            <stringProp name="Argument.value">100</stringProp>
+            <stringProp name="Argument.value">10</stringProp>
             <stringProp name="Argument.metadata">=</stringProp>
           </elementProp>
         </collectionProp>
@@ -191,72 +191,85 @@
         </ResultCollector>
         <hashTree/>
         <BeanShellSampler guiclass="BeanShellSamplerGui" testclass="BeanShellSampler" testname="BeanShell Sampler" enabled="true">
-          <stringProp name="BeanShellSampler.query">
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
+          <stringProp name="BeanShellSampler.query">import com.google.common.io.Files;
+            import org.apache.commons.lang.ArrayUtils;
+            import org.apache.commons.lang.StringUtils;
 
 
- String formatDict(Object object) {
-        kx.c.Dict dict = ((kx.c.Dict) object);
-        Object[] keys = (Object[]) dict.x;
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i &lt; keys.length; i++) {
-        	sb.append(ArrayUtils.toString(keys[i]));
+            import java.io.File;
+            import java.io.IOException;
+            import java.lang.reflect.Array;
+            import java.nio.charset.Charset;
+
+            String formatDict(Object object) {
+            kx.c.Dict dict = ((kx.c.Dict) object);
+            Object[] keys = (Object[]) dict.x;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i &lt; keys.length; i++) {
+            sb.append(ArrayUtils.toString(keys[i]));
             sb.append(&quot;|&quot;);
             sb.append(ArrayUtils.toString(Array.get(dict.y, i)));
             sb.append(&quot;\n&quot;);
-        }
-        return sb.toString();
-    }
+            }
+            return sb.toString();
+            }
 
- String formatFlip(Object object) {
-        kx.c.Flip dict = ((kx.c.Flip) object);
-        String[] keys = dict.x;
-        StringBuilder sb = new StringBuilder();
+            String formatFlip(Object object) {
+            kx.c.Flip dict = ((kx.c.Flip) object);
+            String[] keys = dict.x;
+            StringBuilder sb = new StringBuilder();
 
-        sb.append(String.join(&quot;\t&quot;, keys))
-                .append(&quot;\n&quot;)
-                .append(StringUtils.repeat(&quot;-&quot;,30))
-                .append(&quot;\n&quot;);
+            sb.append(String.join(&quot;\t&quot;, keys))
+            .append(&quot;\n&quot;)
+            .append(StringUtils.repeat(&quot;-&quot;,30))
+            .append(&quot;\n&quot;);
 
-        int length = ArrayUtils.getLength(Array.get(dict.y, 0));
-        for (int i = 0; i &lt; length; i++) {
+            int length = ArrayUtils.getLength(Array.get(dict.y, 0));
+            for (int i = 0; i &lt; length; i++) {
             for (int j = 0; j &lt; keys.length; j++) {
-                sb.append(Array.get(Array.get(dict.y, j), i));
-                sb.append(&quot;\t&quot;);
+            sb.append(Array.get(Array.get(dict.y, j), i));
+            sb.append(&quot;\t&quot;);
 
             }
             sb.append(&quot;\n&quot;);
-        }
+            }
 
-        return sb.toString();
-    }
-    
-String formatKdbResult(Object object) {
-        if (object instanceof kx.c.Dict) {
+            return sb.toString();
+            }
+
+            String formatKdbResult(Object object) {
+            if (object instanceof kx.c.Dict) {
             return formatDict(object);
-        } else if (object instanceof kx.c.Flip) {
+            } else if (object instanceof kx.c.Flip) {
             return formatFlip(object);
-        } else {
+            } else {
             return ArrayUtils.toString(object);
-        }
-    }
+            }
+            }
 
-		//simple query to test
-		// (`a`b; `c`d`e; enlist `f)!10 20 30
-		// flip ([] c1:10 20 30; c2:1.1 2.2 3.3)
-		//([] c1:10 20 30; c2:1.1 2.2 3.3)
-        kx.c conn = new kx.c(&quot;localhost&quot;, 5001);
-        Object result = conn.k(vars.get(&quot;query&quot;));
+            //simple query to test
+            // (`a`b; `c`d`e; enlist `f)!10 20 30
+            // flip ([] c1:10 20 30; c2:1.1 2.2 3.3)
+            //([] c1:10 20 30; c2:1.1 2.2 3.3)
+            kx.c conn = new kx.c(&quot;localhost&quot;, 5001);
+            try{
+            String query = Files.asCharSource(new File(vars.get(&quot;scriptPath&quot;).toString()), Charset.defaultCharset()).read();
 
-//        System.out.println(formatKdbResult(result));
-return formatKdbResult(result);
-        conn.close();
+            Object result = conn.k(query);
 
-</stringProp>
+            String formatted = formatKdbResult(result);
+            conn.close();
+            return formatted;
+            }
+            catch (kx.c.KException e){
+            return &quot;Error when executing q script:\n&quot; + e.getMessage();
+            e.printStackTrace();
+            conn.close();
+            }
+
+
+
+          </stringProp>
           <stringProp name="BeanShellSampler.filename"></stringProp>
           <stringProp name="BeanShellSampler.parameters"></stringProp>
           <boolProp name="BeanShellSampler.resetInterpreter">false</boolProp>
