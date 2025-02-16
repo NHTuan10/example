@@ -5,9 +5,6 @@ import org.jboss.shrinkwrap.resolver.api.maven.Maven;
 import java.util.List;
 
 public class MavenArtifactsResolver<T> {
-    public static void test(String[] args) {
-
-    }
 
     public  List<T> resolveMavenDeps(List<String> deps, Class<T> clazz) {
         List<T> dependencyLocation = Maven.resolver()

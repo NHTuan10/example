@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.*;
+import java.util.stream.Stream;
 
 
 public class CustomClassLoader extends ClassLoader {
@@ -31,15 +32,13 @@ public class CustomClassLoader extends ClassLoader {
 
     public CustomClassLoader(List<URL> classPathUrls) {
         this();
-        classPathUrls.addAll(this.classPathUrls);
-        this.classPathUrls = classPathUrls;
+        this.classPathUrls = Stream.concat(classPathUrls.stream(), classPathUrls.stream()).toList();;
     }
 
     public CustomClassLoader() {
         super();
-        this.classPathUrls =new ArrayList<>();
         this.excludedClassPackages = Collections.unmodifiableSet(getDefaultExcludedPackages());
-        this.classPathUrls.addAll(getJavaClassPath());
+        this.classPathUrls= Collections.unmodifiableList (getJavaClassPath()) ;
     }
     // add set of string to classPathUrls property
 //    public CustomClassLoader addClassPathUrls(List<URL> classPathUrls){
