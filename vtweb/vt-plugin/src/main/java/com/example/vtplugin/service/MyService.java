@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 @EnableConfigurationProperties(ServiceProperties.class)
-//@ModularService
 public class MyService implements Service1 {
 
 	private final ServiceProperties serviceProperties;
 
 	public MyService() {
 		this.serviceProperties = new ServiceProperties();
+		serviceProperties.setMessage("Hardcoded message");
 	}
 
 	public MyService(ServiceProperties serviceProperties) {
@@ -22,7 +22,7 @@ public class MyService implements Service1 {
 
 	@ModularMethod
 	public String message() {
-		System.out.printf("My Service: Invoke message");
+		System.out.println("My Service: Invoke message");
 		return this.serviceProperties.getMessage();
 	}
 }
