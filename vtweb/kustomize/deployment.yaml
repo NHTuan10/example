@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: vtweb
+  name: vtweb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vtweb
+  template:
+    metadata:
+      labels:
+        app: vtweb
+        environment:
+    spec:
+      containers:
+        - imagePullPolicy: IfNotPresent
+          image: imageplaceholder
+          name: vtweb

@@ -1,0 +1,15 @@
+apiVersion: skaffold/v4beta12
+kind: Config
+metadata:
+  name: vtweb
+build:
+  artifacts:
+    - image: nhtuan10/vtweb
+      buildpacks:
+#        builder: gcr.io/buildpacks/builder:v1
+        builder: paketobuildpacks/builder:base
+#      jib: {}
+manifests:
+  kustomize:
+    paths:
+      - kustomize
