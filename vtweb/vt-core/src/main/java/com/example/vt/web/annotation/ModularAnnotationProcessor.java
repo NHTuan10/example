@@ -24,11 +24,11 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class ModularAnnotationProcessor {
 
-    ModularClassLoader classLoader;
+    ModularClassLoader modularClassLoader;
     Map<Class<?>, Collection<ModularServiceHolder>> container;
 
-    public ModularAnnotationProcessor(ModularClassLoader classLoader) {
-        this.classLoader = classLoader;
+    public ModularAnnotationProcessor(ModularClassLoader modularClassLoader) {
+        this.modularClassLoader = modularClassLoader;
         this.container = new ConcurrentHashMap<Class<?>, Collection<ModularServiceHolder>>();
     }
 
@@ -67,7 +67,9 @@ public class ModularAnnotationProcessor {
     public void annotationScan(String pkg, String annotation) throws ProxyCreationException {
         // TODO: need to handle multiple interfaces too
         try (ScanResult scanResult =
-                     new ClassGraph().addClassLoader(this.classLoader.getUrlClassLoader())
+                     new ClassGraph()
+//                             .addClassLoader(this.classLoader)
+                             .overrideClasspath(this.modularClassLoader.getClassPathUrls())
 //                             .verbose()               // Log to stderr
                              .enableAllInfo()         // Scan classes, methods, fields, annotations
                              .acceptPackages(pkg)     // Scan package and subpackages (omit to scan all packages)
@@ -76,8 +78,17 @@ public class ModularAnnotationProcessor {
 //                AnnotationInfo annotationInfo = routeClassInfo.getAnnotationInfo(annotation);
                 if (classInfo.isInterface()) {
                     Class<?> interfaceClass = classInfo.loadClass();
+//                    Class<?> interfaceClass = this.modularClassLoader.loadClass(classInfo.getName());
 //                    Class<?> interfaceClass = classLoader.loadClass(classInfo.getName());
-                    List<Class<?>> implClasses = scanResult.getClassesImplementing(interfaceClass.getName()).loadClasses();
+                    List<? extends Class<?>> implClasses = scanResult.getClassesImplementing(interfaceClass.getName()).stream()
+                            .map(c -> {
+                                try {
+                                    return Class.forName(c.getName(), true, modularClassLoader);
+                                } catch (ClassNotFoundException e) {
+                                    throw new RuntimeException("Internal error when loading class " + c.getName() , e);
+                                }
+                            }).toList();
+//                    implClasses.map(ClassInfo::loadClass);
                     Set<ModularServiceHolder> serviceInfoSet = new HashSet<>();
                     for (Class<?> implClass : implClasses) {
                         try {

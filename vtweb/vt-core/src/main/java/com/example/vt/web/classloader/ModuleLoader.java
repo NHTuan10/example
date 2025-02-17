@@ -74,8 +74,11 @@ public class ModuleLoader {
         log.debug("Loading module from file");
     }
 
-    public Collection<ModularServiceHolder> getModularServices(Class<?> key) {
+    public Collection<ModularServiceHolder> getModularServiceHolder(Class<?> key) {
         return loadedModularServices.get(key);
     }
 
+    public Object getModularService(Class<?> key){
+        return loadedModularServices.get(key).stream().findFirst().map(ModularServiceHolder::getProxyObject).orElse(null);
+    }
 }

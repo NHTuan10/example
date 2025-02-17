@@ -67,7 +67,7 @@ public class ModularClassLoader extends ClassLoader {
     }
 
     @Override
-    protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         LOGGER.debug("Loading class: ", name);
         synchronized (getClassLoadingLock(name)) {
             // check if the class has already been loaded
