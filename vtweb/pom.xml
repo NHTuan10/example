@@ -15,6 +15,7 @@
     <modules>
         <module>vt-core</module>
         <module>vt-plugin</module>
+        <module>vt-plugin2</module>
         <module>vt-common</module>
     </modules>
 

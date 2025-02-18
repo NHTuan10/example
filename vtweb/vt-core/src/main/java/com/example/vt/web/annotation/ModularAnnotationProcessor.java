@@ -70,6 +70,7 @@ public class ModularAnnotationProcessor {
                      new ClassGraph()
 //                             .addClassLoader(this.classLoader)
                              .overrideClasspath(this.modularClassLoader.getClassPathUrls())
+                             .overrideClassLoaders(this.modularClassLoader)
 //                             .verbose()               // Log to stderr
                              .enableAllInfo()         // Scan classes, methods, fields, annotations
                              .acceptPackages(pkg)     // Scan package and subpackages (omit to scan all packages)
@@ -81,18 +82,20 @@ public class ModularAnnotationProcessor {
 //                    Class<?> interfaceClass = this.modularClassLoader.loadClass(classInfo.getName());
 //                    Class<?> interfaceClass = classLoader.loadClass(classInfo.getName());
                     List<? extends Class<?>> implClasses = scanResult.getClassesImplementing(interfaceClass.getName()).stream()
-                            .map(c -> {
-                                try {
-                                    return Class.forName(c.getName(), true, modularClassLoader);
-                                } catch (ClassNotFoundException e) {
-                                    throw new RuntimeException("Internal error when loading class " + c.getName() , e);
-                                }
-                            }).toList();
+//                            .map(c -> {
+//                                try {
+//                                    return Class.forName(c.getName(), true, modularClassLoader);
+//                                } catch (ClassNotFoundException e) {
+//                                    throw new RuntimeException("Internal error when loading class " + c.getName() , e);
+//                                }
+//                            })
+                            .map(ClassInfo::loadClass)
+                            .toList();
 //                    implClasses.map(ClassInfo::loadClass);
                     Set<ModularServiceHolder> serviceInfoSet = new HashSet<>();
                     for (Class<?> implClass : implClasses) {
                         try {
-                            serviceInfoSet.add(new ModularServiceHolder(implClass.getName(), implClass.getName(), ProxyCreator.createNoArgsContructorsProxyClass(interfaceClass, implClass), interfaceClass));
+                            serviceInfoSet.add(new ModularServiceHolder(implClass, implClass.getName(), ProxyCreator.createNoArgsContructorsProxyClass(interfaceClass, implClass), interfaceClass));
                         } catch (Exception e) {
                             throw new ProxyCreationException("Failed to create proxy for class %s with annotation %s in package %s".formatted(implClass.getName(), annotation, pkg), e);
                         }
@@ -118,6 +121,9 @@ public class ModularAnnotationProcessor {
         } catch (ProxyCreationException e) {
             throw e;
         }
+//        catch (ClassNotFoundException e) {
+//            throw new RuntimeException(e);
+//        }
 
     }
 

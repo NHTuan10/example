@@ -16,7 +16,7 @@ public class ModuleLoader {
 
 //    ModularAnnotationProcessor m;
     Map<Class<?>, Collection<ModularServiceHolder>> loadedModularServices = new ConcurrentHashMap<>();
-
+    Map<String, ModularClassLoader> modularClassLoaders = new HashMap<>();
     public void loadModule(String name, String locationUri) {
         loadModule(name, locationUri, "");
     }
@@ -27,10 +27,10 @@ public class ModuleLoader {
         log.info("Loading module from " + uri);
         switch (ArtifactLocationType.valueOf(uri.getScheme().toUpperCase())) {
             case MVN:
-                loadModuleFromMaven(uri, packageToScan);
+                loadModuleFromMaven(name, uri, packageToScan);
                 break;
             case FILE:
-                loadModuleFromFile(uri, packageToScan);
+                loadModuleFromFile(name, uri, packageToScan);
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported artifact location type: " + uri.getScheme());
@@ -41,12 +41,13 @@ public class ModuleLoader {
 //        }
     }
 
-    private void loadModuleFromMaven(URI uri, String packageToScan) {
+    private void loadModuleFromMaven(String name, URI uri, String packageToScan) {
         // Load module from Maven
         String mvnArtifact = uri.getHost() + uri.getPath().replace("/", ":");
         log.info("Loading module from Maven: {}", mvnArtifact);
         List<URL> depUrls = new MavenArtifactsResolver<URL>().resolveMavenDeps(List.of(mvnArtifact), URL.class);
         ModularClassLoader classLoader = new ModularClassLoader(depUrls);
+        modularClassLoaders.put(name, classLoader);
         ModularAnnotationProcessor m = new ModularAnnotationProcessor(classLoader);
         try {
             m.annotationProcess(packageToScan);
@@ -69,13 +70,21 @@ public class ModuleLoader {
         });
     }
 
-    private void loadModuleFromFile(URI uri, String packageToScan) {
+    private void loadModuleFromFile(String name, URI uri, String packageToScan) {
         // Load module from file
         log.debug("Loading module from file");
     }
 
     public Collection<ModularServiceHolder> getModularServiceHolder(Class<?> key) {
         return loadedModularServices.get(key);
+    }
+
+    public Collection<ModularServiceHolder> getModularServiceHolder(String module, String key) throws ClassNotFoundException {
+        return loadedModularServices.get(modularClassLoaders.get(module).loadClass(key));
+    }
+
+    public Class<?> loadClass(String module, String name) throws ClassNotFoundException {
+        return modularClassLoaders.get(module).loadClass(name);
     }
 
     public Object getModularService(Class<?> key){
