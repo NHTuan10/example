@@ -1,4 +1,4 @@
-package com.example.vt.web.exception;
+package com.example.vt.modular.exception;
 
 public class ProxyCreationException extends Exception {
     public ProxyCreationException(String message) {

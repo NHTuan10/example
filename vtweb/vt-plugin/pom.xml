@@ -28,7 +28,7 @@
             <groupId>com.example</groupId>
             <artifactId>vt-common</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

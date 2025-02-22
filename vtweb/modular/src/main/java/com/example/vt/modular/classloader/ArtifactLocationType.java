@@ -1,4 +1,4 @@
-package com.example.vt.web.classloader;
+package com.example.vt.modular.classloader;
 
 public enum ArtifactLocationType {
     MVN,

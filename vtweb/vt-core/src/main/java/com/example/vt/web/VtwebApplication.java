@@ -1,11 +1,15 @@
 package com.example.vt.web;
 
 import com.example.vt.common.service.Service1;
+import com.example.vt.common.service.SomeData;
+import com.example.vt.modular.classloader.ModuleLoader;
+import com.example.vt.modular.model.ModularContext;
 import com.example.vt.web.entity.RedisPerson;
 import com.example.vt.web.repo.PersonRepo;
 import com.example.vt.web.repo.RedisPersonRepo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
@@ -21,11 +25,25 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.InvocationTargetException;
+
+//@SpringBootConfiguration
+//@EnableAutoConfiguration
 @SpringBootApplication
 @EnableJpaRepositories
 @Slf4j
 public class VtwebApplication {
+    //    static Logger log = LoggerFactory.getLogger(VtwebApplication.class);
+    public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
+//        log.info("Test new method");
+        System.out.println("Test new method");
+        ModularContext context = ModuleLoader.getContext();
+        context.<Service1>getModularServices(Service1.class).forEach(service -> {
+            System.out.println(service.message(new SomeData("data1")));
+        });
+        SpringApplication.run(VtwebApplication.class, args);
+    }
 }
 
 @Configuration
@@ -69,7 +87,8 @@ class ThreadController {
 //				Person.builder().name("Unknown").build()).getName();
 //		String name = "Unknown";
         String name = redisTemplate.opsForValue().get(String.valueOf(i));
-        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
+//        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
+        return Thread.currentThread().toString() + ", Person Name: " + name;
     }
 
     @EventListener(ApplicationReadyEvent.class)

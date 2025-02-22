@@ -1,4 +1,4 @@
-package com.example.vt.web.annotation;
+package com.example.vt.modular.annotation;
 
 import lombok.extern.slf4j.Slf4j;
 

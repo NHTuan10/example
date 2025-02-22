@@ -1,18 +1,13 @@
-package com.example.vt.web.annotation;
+package com.example.vt.modular.annotation;
 
-import com.example.vt.common.annotation.ModularMethod;
-import com.example.vt.common.annotation.ModularService;
-import com.example.vt.web.classloader.ModularClassLoader;
-import com.example.vt.web.exception.ProxyCreationException;
-import com.example.vt.web.model.ModularServiceHolder;
+import com.example.vt.modular.classloader.ModularClassLoader;
+import com.example.vt.modular.exception.ProxyCreationException;
+import com.example.vt.modular.model.ModularServiceHolder;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -127,22 +122,22 @@ public class ModularAnnotationProcessor {
 
     }
 
-    public void annotationProcessUsingSpring() {
-        ClassPathScanningCandidateComponentProvider scanner =
-                new ClassPathScanningCandidateComponentProvider(false);
-
-        scanner.addIncludeFilter(new AnnotationTypeFilter(ModularService.class));
-
-        for (BeanDefinition bd : scanner.findCandidateComponents("com.example")) {
-//            try {
-            System.out.println(bd.getBeanClassName());
-
-//                implementModularMethods(Class.forName(bd.getBeanClassName()));
-//            } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException |
-//                     NoSuchMethodException | InstantiationException e) {
-//                throw new RuntimeException(e);
-//            }
-        }
-    }
+//    public void annotationProcessUsingSpring() {
+//        ClassPathScanningCandidateComponentProvider scanner =
+//                new ClassPathScanningCandidateComponentProvider(false);
+//
+//        scanner.addIncludeFilter(new AnnotationTypeFilter(ModularService.class));
+//
+//        for (BeanDefinition bd : scanner.findCandidateComponents("com.example")) {
+////            try {
+//            System.out.println(bd.getBeanClassName());
+//
+////                implementModularMethods(Class.forName(bd.getBeanClassName()));
+////            } catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException |
+////                     NoSuchMethodException | InstantiationException e) {
+////                throw new RuntimeException(e);
+////            }
+//        }
+//    }
 
 }

@@ -17,6 +17,7 @@
         <module>vt-plugin</module>
         <module>vt-plugin2</module>
         <module>vt-common</module>
+        <module>modular</module>
     </modules>
 
     <properties>
@@ -68,12 +69,12 @@
 <!--            <artifactId>maven-aether-provider</artifactId>-->
 <!--            <version>${mavenVersion}</version>-->
 <!--        </dependency>-->
-                <dependency>
-                    <groupId>org.jboss.shrinkwrap.resolver</groupId>
-                    <artifactId>shrinkwrap-resolver-depchain</artifactId>
-                    <version>3.3.3</version>
-                    <type>pom</type>
-                </dependency>
+        <!--                <dependency>-->
+        <!--                    <groupId>org.jboss.shrinkwrap.resolver</groupId>-->
+        <!--                    <artifactId>shrinkwrap-resolver-depchain</artifactId>-->
+        <!--                    <version>3.3.3</version>-->
+        <!--                    <type>pom</type>-->
+        <!--                </dependency>-->
 
     </dependencies>
 </project>

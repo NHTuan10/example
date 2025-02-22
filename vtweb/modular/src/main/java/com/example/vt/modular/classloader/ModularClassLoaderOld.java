@@ -1,4 +1,4 @@
-package com.example.vt.web.classloader;
+package com.example.vt.modular.classloader;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -15,9 +15,9 @@ import java.util.*;
 import java.util.stream.Stream;
 
 @Slf4j
-public class ModularClassLoader extends ClassLoader {
+public class ModularClassLoaderOld extends ClassLoader {
     private final static Logger LOGGER =
-            LoggerFactory.getLogger(ModularClassLoader.class.getName());
+            LoggerFactory.getLogger(ModularClassLoaderOld.class.getName());
 
     @Getter
     private Set<String> excludedClassPackages;
@@ -25,6 +25,7 @@ public class ModularClassLoader extends ClassLoader {
     @Getter
     private List<URL> classPathUrls;
 
+    private String moduleName;
 
     URLClassLoader urlClassLoader;
 
@@ -32,14 +33,16 @@ public class ModularClassLoader extends ClassLoader {
         this.excludedClassPackages = Collections.unmodifiableSet(excludedClassPackages);
     }
 
-    public ModularClassLoader(List<URL> classPathUrls) {
-        this();
+    public ModularClassLoaderOld(String moduleName, List<URL> classPathUrls) {
+        this(moduleName);
         this.classPathUrls = Stream.concat(classPathUrls.stream(), this.classPathUrls.stream()).toList();
         ;
     }
 
-    public ModularClassLoader() {
+    public ModularClassLoaderOld(String moduleName) {
         super();
+//        super(moduleName, getSystemClassLoader());
+        this.moduleName = moduleName;
         this.excludedClassPackages = Collections.unmodifiableSet(getDefaultExcludedPackages());
         this.classPathUrls = Collections.unmodifiableList(getJavaClassPath());
     }
@@ -71,7 +74,7 @@ public class ModularClassLoader extends ClassLoader {
 
     @Override
     public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        LOGGER.debug("Loading class: ", name);
+//        LOGGER.trace("Loading class: ", name);
         synchronized (getClassLoadingLock(name)) {
             // check if the class has already been loaded
             Class<?> c = findLoadedClass(name);
@@ -137,7 +140,7 @@ public class ModularClassLoader extends ClassLoader {
                 byte[] b = is.readAllBytes();
                 return defineClass(null, b, 0, b.length);
             } catch (IOException e) {
-                log.debug("Error when loading class from {}", formattedUrlStr, e);
+//                log.debug("Error when loading class from {}", formattedUrlStr, e);
             }
         }
         return null;

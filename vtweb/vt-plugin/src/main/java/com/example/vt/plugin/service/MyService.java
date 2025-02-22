@@ -1,7 +1,8 @@
 package com.example.vt.plugin.service;
 
-import com.example.vt.common.annotation.ModularMethod;
+//import com.example.vt.common.annotation.ModularMethod;
 import com.example.vt.common.service.Service1;
+import com.example.vt.common.service.SomeData;
 import com.example.vt.util.Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -23,10 +24,10 @@ public class MyService implements Service1 {
 		this.serviceProperties = serviceProperties;
 	}
 
-	@ModularMethod
-	public String message() {
-		log.info("My Service: Invoke message");
+	//	@ModularMethod
+	public String message(SomeData data) {
+		log.info("My Service: Invoke message with data {}", data);
 		log.info("Invoking " + Utils.method1("Helena"));
-		return this.serviceProperties.getMessage();
+		return this.serviceProperties.getMessage() + " " + data;
 	}
 }

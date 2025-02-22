@@ -1,4 +1,4 @@
-package com.example.vt.web.model;
+package com.example.vt.modular.model;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -10,7 +10,7 @@ import lombok.ToString;
 @Getter
 @AllArgsConstructor
 public final class ModularServiceHolder {
-    private final Class serviceClazz;
+    private final Class serviceClass;
     private final String name;
     private final Object proxyObject;
     private final Class<?> interfaceClass;
