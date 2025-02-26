@@ -42,6 +42,7 @@ public class VtwebApplication {
         context.<Service1>getModularServices(Service1.class).forEach(service -> {
             System.out.println(service.message(new SomeData("data1")));
         });
+        Thread.currentThread().getContextClassLoader();
         SpringApplication.run(VtwebApplication.class, args);
     }
 }

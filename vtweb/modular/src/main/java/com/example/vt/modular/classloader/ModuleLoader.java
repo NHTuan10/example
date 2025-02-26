@@ -23,13 +23,14 @@ public class ModuleLoader {
 
     Map<Class<?>, Collection<ModularServiceHolder>> loadedModularServices = new ConcurrentHashMap<>();
     Map<String, Collection<ModularServiceHolder>> loadedModularServices2 = new ConcurrentHashMap<>();
-    Map<String, ModularClassLoader> modularClassLoaders = new HashMap<>();
+    Map<String, ModularClassLoader> modularClassLoaders = new ConcurrentHashMap<>();
 
     private volatile static ModuleLoader instance;
+    private static final Object lock = new Object();
 
     public static ModuleLoader getInstance() {
         if (instance == null) {
-            synchronized (ModuleLoader.class) {
+            synchronized (lock) {
                 if (instance == null) {
                     instance = new ModuleLoader();
                 }
@@ -114,6 +115,10 @@ public class ModuleLoader {
 
     public Class<?> loadClass(String module, String name) throws ClassNotFoundException {
         return modularClassLoaders.get(module).loadClass(name);
+    }
+
+    public ClassLoader getClassLoader(String module) throws ClassNotFoundException {
+        return modularClassLoaders.get(module);
     }
 
 //    public Object getModularServiceByExactClass(Class<?> key){
