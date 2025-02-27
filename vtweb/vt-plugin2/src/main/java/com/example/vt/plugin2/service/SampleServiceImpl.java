@@ -1,4 +1,4 @@
-package com.example.vt.web.service;
+package com.example.vt.plugin2.service;
 
 import com.example.vt.common.service.Service1;
 import com.example.vt.common.service.SomeData;

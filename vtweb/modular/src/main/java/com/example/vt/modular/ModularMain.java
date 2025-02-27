@@ -1,11 +1,9 @@
 package com.example.vt.modular;
 
 import com.example.vt.modular.classloader.ModuleLoader;
-import com.example.vt.modular.model.ModularServiceHolder;
 import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 @Slf4j
 public class ModularMain {
@@ -20,7 +18,7 @@ public class ModularMain {
         ModuleLoader m = ModuleLoader.getInstance();
         m.loadModule("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT", "com.example");
 //        m.loadModule("calc-core", "mvn://com.finalhints/calc-core/0.0.1", "com.finalhints");
-//        m.loadModule("vt-plugin-2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example");
+        m.loadModule("vt-plugin-2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example");
 //        m.loadModule("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT");
 
 //        Class c = new ModularClassLoader().loadClass("com.example.vtplugin.service.MyService");
@@ -30,7 +28,7 @@ public class ModularMain {
 //        Service1 service1 = (Service1) m.getModularService(Service1.class);
 //        service1.message();
 //        SpringApplication.run(VtwebApplication.class, args);
-        List<ModularServiceHolder> modularServices = m.getModularServiceHolder("vt-plugin", "com.example.vt.common.service.Service1").stream().toList();
+//        List<ModularServiceHolder> modularServices = m.getModularServiceHolder("vt-plugin", "com.example.vt.common.service.Service1").stream().toList();
 //        List<ModularServiceHolder> modularServices2 = m.getModularServiceHolder("vt-plugin-2", "com.example.vt.common.service.Service1").stream().toList();
 //        for (ModularServiceHolder modularService : modularServices) {
 //            Service1 service1 = (Service1) modularService.getProxyObject();
