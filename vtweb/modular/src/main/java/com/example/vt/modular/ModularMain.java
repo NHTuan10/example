@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 
 @Slf4j
 public class ModularMain {
-    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
         testByteBuddy();
 //        List<URL> depUrls = new MavenArtifactsResolver<URL>().resolveMavenDeps(List.of("com.example:vt-plugin:0.0.1-SNAPSHOT"), URL.class);
 //        ModularClassLoader classLoader = new ModularClassLoader(depUrls);
@@ -16,9 +16,44 @@ public class ModularMain {
 //        Object s =  m.getConstructor().newInstance();
 //        System.out.println(m.getDeclaredMethod("message",new Class[]{}).invoke(s));
         ModuleLoader m = ModuleLoader.getInstance();
-        m.loadModule("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT", "com.example");
+        new Thread(() -> {
+            try {
+                m.loadModule("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT", "com.example", true);
+                Thread.currentThread().setContextClassLoader(m.getClassLoader("vt-plugin"));
+                m.loadClass("vt-plugin", "com.example.vt.plugin.Application").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        Thread.sleep(1000);
+        new Thread(() -> {
+            try {
+                m.loadModule("vt-plugin-2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example", false);
+                Thread.currentThread().setContextClassLoader(m.getClassLoader("vt-plugin-2"));
+                m.loadClass("vt-plugin-2", "com.example.vt.plugin2.Application").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+        Thread.sleep(1000);
+        new Thread(() -> {
+            try {
+                m.loadModule("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example", false);
+                Thread.currentThread().setContextClassLoader(m.getClassLoader("vt-core"));
+                m.loadClass("vt-core", "com.example.vt.web.VtwebApplication").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException |
+                     NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
 //        m.loadModule("calc-core", "mvn://com.finalhints/calc-core/0.0.1", "com.finalhints");
-        m.loadModule("vt-plugin-2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example");
+
+//        m.loadModule("vt-plugin-2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example");
+//        m.loadClass("vt-plugin-2", "com.example.vt.plugin2.Application").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+
 //        m.loadModule("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT");
 
 //        Class c = new ModularClassLoader().loadClass("com.example.vtplugin.service.MyService");
@@ -43,18 +78,9 @@ public class ModularMain {
 //            System.out.println(modularService.getInterfaceClass().getDeclaredMethod("message", new Class[]{}).invoke(modularService.getProxyObject()));
 //        }
 //        SpringApplication.run(VtwebApplication.class, args);
-        log.info("Test new method");
+//        log.info("Test new method");
 //        m.loadClass("calc-core", "com.finalhints.osgi.Activator").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
-        new Thread(() -> {
-            try {
-                m.loadModule("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example");
-                Thread.currentThread().setContextClassLoader(m.getClassLoader("vt-core"));
-                m.loadClass("vt-core", "com.example.vt.web.VtwebApplication").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
-            } catch (ClassNotFoundException | InvocationTargetException | IllegalAccessException |
-                     NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }).start();
+
 
         //        m.loadClass("vt-core", "org.springframework.boot.loader.launch.JarLauncher").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
 

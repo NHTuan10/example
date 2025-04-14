@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import net.bytebuddy.implementation.bind.annotation.AllArguments;
 import net.bytebuddy.implementation.bind.annotation.Origin;
 import net.bytebuddy.implementation.bind.annotation.RuntimeType;
+import net.bytebuddy.implementation.bind.annotation.This;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.*;
@@ -25,7 +26,7 @@ public class ServiceInvocationInterceptor {
     @SneakyThrows
     @RuntimeType
     public Object intercept(@AllArguments Object[] allArguments,
-                            @Origin Method method) {
+                            @Origin Method method, @This Object object) {
         // intercept any method of any signature
         Class<?>[] parameterTypes = Arrays.stream(method.getParameterTypes())
                 .map(Class::getName)

@@ -106,7 +106,7 @@ public class ModularClassLoader extends URLClassLoader {
         }
     }
 
-    private boolean shouldLoadByPlatformClassLoader(String name) {
+    protected boolean shouldLoadByPlatformClassLoader(String name) {
         return name.startsWith("java") || name.startsWith("jdk") ||
                 excludedClassPackages.stream().anyMatch(name::startsWith);
     }

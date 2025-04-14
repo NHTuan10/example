@@ -1,9 +1,11 @@
 package com.example.vt.web;
 
+import com.example.vt.common.service.DaggerSampleService;
 import com.example.vt.common.service.Service1;
 import com.example.vt.common.service.SomeData;
 import com.example.vt.modular.classloader.ModuleLoader;
 import com.example.vt.modular.model.ModularContext;
+import com.example.vt.web.entity.Person;
 import com.example.vt.web.entity.RedisPerson;
 import com.example.vt.web.repo.PersonRepo;
 import com.example.vt.web.repo.RedisPersonRepo;
@@ -12,9 +14,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -26,24 +28,27 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 //@SpringBootConfiguration
 //@EnableAutoConfiguration
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.vt")
 @EnableJpaRepositories
 @Slf4j
 public class VtwebApplication {
+
     //    static Logger log = LoggerFactory.getLogger(VtwebApplication.class);
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
 //        log.info("Test new method");
-        System.out.println("Test new method");
-        ModularContext context = ModuleLoader.getContext();
-        context.<Service1>getModularServices(Service1.class).forEach(service -> {
-            System.out.println(service.message(new SomeData("data1")));
-        });
-        Thread.currentThread().getContextClassLoader();
+
         SpringApplication.run(VtwebApplication.class, args);
+//        System.out.println("Test new method");
+//        ModularContext context = ModuleLoader.getContext();
+//        context.<Service1>getModularServices(Service1.class).forEach(service -> {
+//            System.out.println(service.message(new SomeData("data1")));
+//        });
+        Thread.currentThread().getContextClassLoader();
     }
 }
 
@@ -61,6 +66,12 @@ class AppConfig {
         template.setConnectionFactory(connectionFactory);
         return template;
     }
+
+    @Bean
+    List<Service1> services() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+        ModularContext context = ModuleLoader.getContext();
+        return context.<Service1>getModularServicesFromSpring(Service1.class);
+    }
 }
 
 @RestController
@@ -75,19 +86,29 @@ class ThreadController {
     @Autowired
     RedisTemplate<String, String> redisTemplate;
 
-    @Lazy
-//    @Autowired
-    Service1 service1;
+    @Autowired
+    ApplicationContext applicationContext;
+
+    //    @Lazy
+    @Autowired
+    List<Service1> services;
 
     @GetMapping("/name")
-    public String getThreadName() throws InterruptedException {
+    public String getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 //		throw new RuntimeException("This is a test exception");
 //		Thread.sleep(1000);
         int i = 1 + (int) (Math.random() * 10);
-//		String name = personRepo.findById(i).orElse(
-//				Person.builder().name("Unknown").build()).getName();
+        String name = personRepo.findById(i).orElse(
+                Person.builder().name("Unknown").build()).getName();
+
+        services.forEach(service -> {
+            System.out.println(service.message(new SomeData("data1")));
+        });
+
+        DaggerSampleService d = ModuleLoader.getContext().<DaggerSampleService>getModularServices(DaggerSampleService.class).get(0);
+        d.test();
 //		String name = "Unknown";
-        String name = redisTemplate.opsForValue().get(String.valueOf(i));
+//        String name = redisTemplate.opsForValue().get(String.valueOf(i));
 //        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
         return Thread.currentThread().toString() + ", Person Name: " + name;
     }

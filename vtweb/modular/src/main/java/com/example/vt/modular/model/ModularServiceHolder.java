@@ -12,7 +12,7 @@ import lombok.ToString;
 public final class ModularServiceHolder {
     private final Class serviceClass;
     private final String name;
-    private final Object proxyObject;
+    private final Object instance;
     private final Class<?> interfaceClass;
 
 }
