@@ -111,7 +111,7 @@ public class ModuleLoader {
         ModularAnnotationProcessor m = new ModularAnnotationProcessor(classLoader);
         try {
             m.annotationProcess(packageToScan, lazyInit);
-            m.configurationAnnotationProcessor(packageToScan);
+//            m.configurationAnnotationProcessor(packageToScan);
             addModularServices(m.getModularServices());
         }
 //        catch (ProxyCreationException e) {
