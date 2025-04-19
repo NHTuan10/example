@@ -17,12 +17,15 @@ public class ModularClassLoader extends URLClassLoader {
     private final static Logger LOGGER =
             LoggerFactory.getLogger(ModularClassLoader.class.getName());
 
+    public static final String MODULAR_PACKAGE = "com.example.vt.modular";
+
     @Getter
     private Set<String> excludedClassPackages;
 
     @Getter
     private List<URL> classPathUrls;
 
+    @Getter
     private String moduleName;
 
     URLClassLoader urlClassLoader;
@@ -35,7 +38,6 @@ public class ModularClassLoader extends URLClassLoader {
         this(moduleName);
         this.classPathUrls = Stream.concat(classPathUrls.stream(), this.classPathUrls.stream()).toList();
         classPathUrls.forEach(this::addURL);
-        ;
     }
 
     public ModularClassLoader(String moduleName) {
@@ -108,6 +110,7 @@ public class ModularClassLoader extends URLClassLoader {
 
     protected boolean shouldLoadByPlatformClassLoader(String name) {
         return name.startsWith("java") || name.startsWith("jdk") ||
+//                || name.startsWith(MODULAR_PACKAGE)
                 excludedClassPackages.stream().anyMatch(name::startsWith);
     }
 

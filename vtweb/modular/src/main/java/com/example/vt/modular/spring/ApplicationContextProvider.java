@@ -27,4 +27,15 @@ public class ApplicationContextProvider implements ApplicationContextAware {
     public static void registerBean(String beanName, Object bean) {
         ((ConfigurableApplicationContext) context).getBeanFactory().registerSingleton(beanName, bean);
     }
+
+//    @EventListener
+//    public void handleContextRefreshEvent(ContextRefreshedEvent ctxStartEvt) {
+//        System.out.println("Context Start Event received.");
+//    }
+//
+//    @Override
+//    public void onApplicationEvent(ContextRefreshedEvent event) {
+//        System.out.println("Context Start Event received onApplicationEvent.");
+//
+//    }
 }

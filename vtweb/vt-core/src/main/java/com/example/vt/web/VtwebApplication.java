@@ -2,6 +2,7 @@ package com.example.vt.web;
 
 import com.example.vt.common.service.DaggerSampleService;
 import com.example.vt.common.service.Service1;
+import com.example.vt.common.service.Service2;
 import com.example.vt.common.service.SomeData;
 import com.example.vt.modular.classloader.ModuleLoader;
 import com.example.vt.modular.model.ModularContext;
@@ -101,16 +102,19 @@ class ThreadController {
         String name = personRepo.findById(i).orElse(
                 Person.builder().name("Unknown").build()).getName();
 
-        services.forEach(service -> {
+        services.parallelStream().forEach(service -> {
             System.out.println(service.message(new SomeData("data1")));
         });
 
         DaggerSampleService d = ModuleLoader.getContext().<DaggerSampleService>getModularServices(DaggerSampleService.class).get(0);
         d.test();
+
+        Service2 service2 = ModuleLoader.getContext().<Service2>getModularServices(Service2.class).get(0);
+        service2.test();
 //		String name = "Unknown";
 //        String name = redisTemplate.opsForValue().get(String.valueOf(i));
 //        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
-        return Thread.currentThread().toString() + ", Person Name: " + name;
+        return Thread.currentThread() + ", Person Name: " + name;
     }
 
     @EventListener(ApplicationReadyEvent.class)

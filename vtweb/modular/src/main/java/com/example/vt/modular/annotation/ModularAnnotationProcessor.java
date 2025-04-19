@@ -12,7 +12,9 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-
+/**
+ * Not a thread safe implementation
+ */
 @NoArgsConstructor
 @Slf4j
 public class ModularAnnotationProcessor {
@@ -66,6 +68,7 @@ public class ModularAnnotationProcessor {
                              .enableAllInfo()         // Scan classes, methods, fields, annotations
                              .acceptPackages(pkg)     // Scan package and subpackages (omit to scan all packages)
                              .scan()) {               // Start the scan
+
             for (ClassInfo configClassInfo : scanResult.getClassesWithAnnotation(annotation)) {
                 MethodInfoList methodInfosList = configClassInfo.getMethodInfo().filter(methodFilter -> methodFilter.hasAnnotation(ModularService.class.getName()));
                 for (MethodInfo methodInfo : methodInfosList) {

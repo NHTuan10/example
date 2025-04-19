@@ -7,7 +7,15 @@ import java.lang.reflect.InvocationTargetException;
 
 @Slf4j
 public class ModularMain {
-    public static void main(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
+    public static void main(String[] args) {
+        ModuleLoader m = ModuleLoader.getInstance();
+        m.startSpringModuleSyncWithMainClassLoop("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT", "com.example.vt.plugin.Application", "com.example");
+        m.startSpringModuleAsyncWithMainClassLoop("vt-plugin2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example.vt.plugin2.Application");
+        m.startModuleAsync("vt-plugin-3-nospring", "mvn://com.example/vt-plugin-3-nospring/0.0.1-SNAPSHOT");
+        m.startSpringModuleAsyncWithMainClassLoop("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example.vt.web.VtwebApplication", "com.example");
+    }
+
+    public static void main2(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
         testByteBuddy();
 //        List<URL> depUrls = new MavenArtifactsResolver<URL>().resolveMavenDeps(List.of("com.example:vt-plugin:0.0.1-SNAPSHOT"), URL.class);
 //        ModularClassLoader classLoader = new ModularClassLoader(depUrls);
@@ -25,6 +33,21 @@ public class ModularMain {
                      NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
+        }).start();
+        Thread.sleep(1000);
+
+
+        new Thread(() -> {
+//            try {
+            m.loadModule("vt-plugin-3-nospring", "mvn://com.example/vt-plugin-3-nospring/0.0.1-SNAPSHOT", "com.example", false);
+            Thread.currentThread().setContextClassLoader(m.getClassLoader("vt-plugin-3-nospring"));
+//                m.loadClass("vt-plugin-3-nospring", "com.example.vt.plugin.Application").getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+//            }
+//            catch (ClassNotFoundException e) {
+//            | InvocationTargetException | IllegalAccessException |
+//                     NoSuchMethodException e) {
+//                throw new RuntimeException(e);
+//            }
         }).start();
         Thread.sleep(1000);
         new Thread(() -> {

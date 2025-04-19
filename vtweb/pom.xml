@@ -17,6 +17,7 @@
         <module>vt-plugin</module>
         <module>vt-plugin2</module>
         <module>vt-common</module>
+        <module>vt-plugin3-nospring</module>
         <module>modular</module>
     </modules>
 
