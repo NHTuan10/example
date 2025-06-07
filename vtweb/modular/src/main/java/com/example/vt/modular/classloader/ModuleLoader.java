@@ -7,6 +7,7 @@ import com.example.vt.modular.model.ModularServiceHolder;
 import com.example.vt.modular.proxy.ServiceInvocationInterceptor;
 import com.example.vt.modular.spring.ApplicationContextProvider;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
@@ -34,9 +36,11 @@ public class ModuleLoader {
 
     Map<Class<?>, Collection<ModularServiceHolder>> loadedModularServices = new ConcurrentHashMap<>(); //UNUSED
     Map<String, Collection<ModularServiceHolder>> loadedModularServices2 = new ConcurrentHashMap<>();
-    Map<String, ModularClassLoader> modularClassLoaders = new ConcurrentHashMap<>();
+    //    Map<String, ModularClassLoader> modularClassLoaders = new ConcurrentHashMap<>();
     Map<Class<?>, List<Object>> loadedProxyObjects = new ConcurrentHashMap<>();
     Map<String, ModuleDetail> moduleDetailMap = new ConcurrentHashMap<>();
+
+//    Executor executor;
 
     public static enum LoadStatus {
         LOADING,
@@ -55,27 +59,41 @@ public class ModuleLoader {
         @Getter
         ModularClassLoader modularClassLoader;
         CountDownLatch readyLatch;
+        CountDownLatch awaitMainClassLatch;
     }
 
     private volatile static ModuleLoader instance;
     private static final Object lock = new Object();
 
     public static ModuleLoader getInstance() {
+        return getInstance(ModuleLoaderConfiguration.builder().build());
+    }
+
+
+    public static ModuleLoader getInstance(ModuleLoaderConfiguration configuration) {
         if (instance == null) {
             synchronized (lock) {
                 if (instance == null) {
                     instance = new ModuleLoader();
+//                    instance.executor = Executors.newFixedThreadPool(configuration.getThreadPoolSize());
                 }
             }
         }
         return instance;
     }
 
+    @Builder
+    public static class ModuleLoaderConfiguration {
+//        @Builder.Default
+//        @Getter
+//        private final int threadPoolSize = 10;
+    }
+
     private ModuleLoader() {
     }
 
     public void loadModule(String name, String locationUri, boolean lazyInit) {
-        loadModule(name, locationUri, "", lazyInit);
+        loadModule(name, locationUri, "*", lazyInit);
     }
 
     public void loadModule(String name, String locationUri, String packageToScan, boolean lazyInit) {
@@ -244,82 +262,123 @@ public class ModuleLoader {
         return proxy;
     }
 
-    private Thread startModule(String moduleName, String locationUri, boolean lazyInit, String mainClass, String packageToScan, boolean awaitMainClass) {
+    private CompletableFuture<ModuleDetail> startModule(String moduleName, String locationUri, boolean lazyInit, String mainClass, String packageToScan, boolean awaitMainClass) {
+        CompletableFuture<ModuleDetail> moduleDetailCompletableFuture = new CompletableFuture<>();
         if (!moduleDetailMap.containsKey(moduleName)) {
-            ModuleDetail moduleDetail = new ModuleDetail(moduleName, LoadStatus.LOADING, null, new CountDownLatch(1));
+            CountDownLatch await = new CountDownLatch(1);
+            ModuleDetail moduleDetail = new ModuleDetail(moduleName, LoadStatus.LOADING, null, new CountDownLatch(1), await);
             moduleDetailMap.put(moduleName, moduleDetail);
 
             Thread t = new Thread(() -> {
-                loadModule(moduleName, locationUri, packageToScan, lazyInit);
-                Thread.currentThread().setContextClassLoader(getClassLoader(moduleName));
-                if (mainClass != null) {
-                    try {
-                        loadClass(moduleName, mainClass).getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
-                        if (awaitMainClass) {
-                            CountDownLatch countDownLatch = new CountDownLatch(1);
-                            Runtime.getRuntime().addShutdownHook(new Thread(countDownLatch::countDown));
-                            countDownLatch.await();
+                try {
+                    loadModule(moduleName, locationUri, packageToScan, lazyInit);
+                    Thread.currentThread().setContextClassLoader(getClassLoader(moduleName));
+                    if (mainClass != null) {
+                        try {
+                            loadClass(moduleName, mainClass).getDeclaredMethod("main", String[].class).invoke(null, (Object) new String[]{});
+                            moduleDetailCompletableFuture.complete(moduleDetail);
+                            log.info("Finish loading module '{}'", moduleName);
+                            if (awaitMainClass) {
+                                Runtime.getRuntime().addShutdownHook(new Thread(await::countDown));
+                                await.await();
+                            }
+                        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException |
+                                 ClassNotFoundException | InterruptedException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException |
-                             ClassNotFoundException | InterruptedException e) {
-                        throw new RuntimeException(e);
+                    } else {
+                        moduleDetailCompletableFuture.complete(moduleDetail);
+                        log.info("Finish loading module '{}'", moduleName);
                     }
+                } catch (Exception e) {
+                    ModuleLoadException exception = new ModuleLoadException("Failed to load module '" + moduleName, e);
+                    moduleDetailCompletableFuture.completeExceptionally(exception);
+                    throw e;
                 }
             });
             t.start();
-            return t;
+            return moduleDetailCompletableFuture;
         } else {
-            throw new ModuleLoadException("Module '" + moduleName + "' is already loaded");
+            ModuleLoadException exception = new ModuleLoadException("Module '" + moduleName + "' is already loaded");
+            moduleDetailCompletableFuture.completeExceptionally(exception);
+            throw exception;
         }
     }
 
-    public void startModuleSync(String moduleName, String locationUri, String packageToScan) {
-        Thread t = startModule(moduleName, locationUri, false, null, packageToScan, false);
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Interrupt during start module [%s]".formatted(moduleName), e);
-        }
+    public ModuleDetail startModuleSync(String moduleName, String locationUri, String packageToScan) {
+        CompletableFuture<ModuleDetail> cf = startModule(moduleName, locationUri, false, null, packageToScan, false);
+        return cf.join();
     }
 
-    public void startModuleAsync(String moduleName, String locationUri, String packageToScan) {
-        startModule(moduleName, locationUri, false, null, packageToScan, false);
+    public ModuleDetail startModuleSyncWithMainClass(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        CompletableFuture<ModuleDetail> cf = startModule(moduleName, locationUri, false, mainClass, packageToScan, false);
+        return cf.join();
     }
 
-    public void startModuleAsync(String moduleName, String locationUri) {
-        startModuleAsync(moduleName, locationUri, "");
+    public CompletableFuture<ModuleDetail> startModuleAsync(String moduleName, String locationUri, String packageToScan) {
+        return startModule(moduleName, locationUri, false, null, packageToScan, false);
     }
 
-    public void startModuleAsyncWithMainClass(String moduleName, String locationUri, String packageToScan, String mainClass) {
-        startModule(moduleName, locationUri, false, mainClass, packageToScan, false);
-    }
-
-//    public void startSpringModuleAsync(String moduleName, String locationUri, String packageToScan) {
-//        startModule(moduleName, locationUri, true, null, packageToScan);
+//    public CompletableFuture<ModuleDetail> startModuleAsync(String moduleName, String locationUri) {
+//        return startModuleAsync(moduleName, locationUri, "*");
 //    }
 
-    public void startSpringModuleSyncWithMainClassLoop(String moduleName, String locationUri, String mainClass, String packageToScan) {
-        startModule(moduleName, locationUri, true, mainClass, packageToScan, true);
-        ModuleDetail moduleDetail = moduleDetailMap.get(moduleName);
-        try {
-            moduleDetail.readyLatch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+    public CompletableFuture<ModuleDetail> startModuleAsyncWithMainClass(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        return startModule(moduleName, locationUri, false, mainClass, packageToScan, false);
     }
 
+    // Spring
 
-    public void startSpringModuleSyncWithMainClassLoop(String moduleName, String locationUri, String mainClass) {
-        startSpringModuleSyncWithMainClassLoop(moduleName, locationUri, mainClass, "");
+    public ModuleDetail startSpringModuleSyncWithMainClassLoop(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        CompletableFuture<ModuleDetail> cf = startModule(moduleName, locationUri, true, mainClass, packageToScan, true);
+        return awaitSpringApplicationContextReady(moduleName, cf);
     }
 
-    public void startSpringModuleAsyncWithMainClassLoop(String moduleName, String locationUri, String mainClass, String packageToScan) {
-        startModule(moduleName, locationUri, true, mainClass, packageToScan, true);
+    public ModuleDetail startSpringModuleSyncWithMainClass(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        CompletableFuture<ModuleDetail> completableFuture = startModule(moduleName, locationUri, true, mainClass, packageToScan, false);
+        return awaitSpringApplicationContextReady(moduleName, completableFuture);
     }
 
-    public void startSpringModuleAsyncWithMainClassLoop(String moduleName, String locationUri, String mainClass) {
-        startSpringModuleAsyncWithMainClassLoop(moduleName, locationUri, mainClass, "");
+//    public void startSpringModuleSyncWithMainClassLoop(String moduleName, String locationUri, String mainClass) throws ExecutionException, InterruptedException {
+//        startSpringModuleSyncWithMainClassLoop(moduleName, locationUri, mainClass, "*");
+//    }
+
+    public CompletableFuture<ModuleDetail> startSpringModuleAsyncWithMainClassLoop(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        return startModule(moduleName, locationUri, true, mainClass, packageToScan, true);
     }
+
+//    public CompletableFuture<ModuleDetail> startSpringModuleAsyncWithMainClassLoop(String moduleName, String locationUri, String mainClass) {
+//        return startSpringModuleAsyncWithMainClassLoop(moduleName, locationUri, mainClass, "*");
+//    }
+
+    public CompletableFuture<ModuleDetail> startSpringModuleAsyncWithMainClass(String moduleName, String locationUri, String mainClass, String packageToScan) {
+        return startModule(moduleName, locationUri, true, mainClass, packageToScan, false);
+    }
+
+    public boolean unloadModule(String moduleName) {
+        return false;
+    }
+
+//    public CompletableFuture<ModuleDetail> startSpringModuleAsyncWithMainClass(String moduleName, String locationUri, String mainClass) {
+//        return startSpringModuleAsyncWithMainClass(moduleName, locationUri, mainClass, "*");
+//    }
+
+    private ModuleDetail awaitSpringApplicationContextReady(String moduleName, CompletableFuture<ModuleDetail> completableFuture) {
+//        ModuleDetail moduleDetail = completableFuture
+//                .exceptionally(t -> {
+//                    throw new RuntimeException(t);
+//                }).get();
+        return completableFuture.join();
+//        try {
+//            moduleDetail.readyLatch.await();
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
+    }
+
+//    public ModuleDetail startSpringModuleSyncWithMainClass(String moduleName, String locationUri, String mainClass) {
+//        return startSpringModuleSyncWithMainClass(moduleName, locationUri, mainClass, "*");
+//    }
 
     public void notifyModuleReady(String moduleName) {
         ModuleDetail moduleDetail = moduleDetailMap.get(moduleName);
@@ -329,4 +388,6 @@ public class ModuleLoader {
         }
         moduleDetail.loadStatus = LoadStatus.LOADED;
     }
+
+
 }

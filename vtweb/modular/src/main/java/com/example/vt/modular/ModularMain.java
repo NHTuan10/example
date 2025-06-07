@@ -10,9 +10,17 @@ public class ModularMain {
     public static void main(String[] args) {
         ModuleLoader m = ModuleLoader.getInstance();
         m.startSpringModuleSyncWithMainClassLoop("vt-plugin", "mvn://com.example/vt-plugin/0.0.1-SNAPSHOT", "com.example.vt.plugin.Application", "com.example");
-        m.startSpringModuleAsyncWithMainClassLoop("vt-plugin2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example.vt.plugin2.Application");
-        m.startModuleAsync("vt-plugin-3-nospring", "mvn://com.example/vt-plugin-3-nospring/0.0.1-SNAPSHOT");
-        m.startSpringModuleAsyncWithMainClassLoop("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example.vt.web.VtwebApplication", "com.example");
+        m.startSpringModuleAsyncWithMainClassLoop("vt-plugin2", "mvn://com.example/vt-plugin-2/0.0.1-SNAPSHOT", "com.example.vt.plugin2.Application", "*");
+        m.startModuleAsync("vt-plugin-3-nospring", "mvn://com.example/vt-plugin-3-nospring/0.0.1-SNAPSHOT", "*");
+        m.startSpringModuleAsyncWithMainClass("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example.vt.web.VtwebApplication", "com.example");
+//        try {
+//            m.startSpringModuleSyncWithMainClass("vt-core", "mvn://com.example/vt-core/0.0.1-SNAPSHOT", "com.example.vt.web.VtwebApplication", "com.example");
+//        }
+//        catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        System.out.println("all modules started");
+        m.unloadModule("vt-plugin");
     }
 
     public static void main2(String[] args) throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, InterruptedException {
