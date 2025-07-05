@@ -10,13 +10,23 @@
 	</parent>
 	<groupId>com.example</groupId>
 	<artifactId>vt-core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
 	<name>vt-core</name>
 	<properties>
 		<jandexVersion>3.2.6</jandexVersion>
 		<classgraphVersion>4.8.179</classgraphVersion>
 	</properties>
 	<dependencies>
+        <dependency>
+            <groupId>io.github.nhtuan10</groupId>
+            <artifactId>modular-impl</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.nhtuan10</groupId>
+            <artifactId>modular-spring</artifactId>
+            <version>0.0.1</version>
+        </dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
@@ -96,12 +106,18 @@
 		<dependency>
 			<groupId>com.example</groupId>
 			<artifactId>vt-common</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
 			<artifactId>byte-buddy</artifactId>
+        </dependency>
+        <!--test class loader issues-->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.10.0</version>
 		</dependency>
 	</dependencies>
 

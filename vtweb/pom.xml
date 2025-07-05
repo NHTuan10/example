@@ -6,7 +6,7 @@
 
     <groupId>com.example</groupId>
     <artifactId>vtweb</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>pom</packaging>
     <!--    <packaging>jar</packaging>-->
     <prerequisites>
@@ -18,7 +18,8 @@
         <module>vt-plugin2</module>
         <module>vt-common</module>
         <module>vt-plugin3-nospring</module>
-        <module>modular</module>
+        <module>launcher</module>
+        <!--        <module>modular-bak</module>-->
     </modules>
 
     <properties>

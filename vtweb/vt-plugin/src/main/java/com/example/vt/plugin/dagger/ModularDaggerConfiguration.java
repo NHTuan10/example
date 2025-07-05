@@ -1,7 +1,7 @@
 package com.example.vt.plugin.dagger;
 
-import com.example.vt.modular.annotation.ModularConfiguration;
-import com.example.vt.modular.annotation.ModularService;
+import io.github.nhtuan10.modular.api.annotation.ModularConfiguration;
+import io.github.nhtuan10.modular.api.annotation.ModularService;
 
 @ModularConfiguration
 public class ModularDaggerConfiguration {

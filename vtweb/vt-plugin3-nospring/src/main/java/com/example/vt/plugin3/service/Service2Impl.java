@@ -1,7 +1,7 @@
 package com.example.vt.plugin3.service;
 
 import com.example.vt.common.service.Service2;
-import com.example.vt.modular.annotation.ModularService;
+import io.github.nhtuan10.modular.api.annotation.ModularService;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;

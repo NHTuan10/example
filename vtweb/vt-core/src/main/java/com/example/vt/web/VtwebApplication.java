@@ -4,13 +4,14 @@ import com.example.vt.common.service.DaggerSampleService;
 import com.example.vt.common.service.Service1;
 import com.example.vt.common.service.Service2;
 import com.example.vt.common.service.SomeData;
-import com.example.vt.modular.classloader.ModuleLoader;
-import com.example.vt.modular.model.ModularContext;
 import com.example.vt.web.entity.Person;
 import com.example.vt.web.entity.RedisPerson;
 import com.example.vt.web.repo.PersonRepo;
 import com.example.vt.web.repo.RedisPersonRepo;
+import io.github.nhtuan10.modular.api.Modular;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -28,8 +29,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 //@SpringBootConfiguration
 //@EnableAutoConfiguration
@@ -70,8 +74,8 @@ class AppConfig {
 
     @Bean
     List<Service1> services() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-        ModularContext context = ModuleLoader.getContext();
-        return context.<Service1>getModularServicesFromSpring(Service1.class);
+
+        return Modular.<Service1>getModularServicesFromSpring("anotherService1", Service1.class);
     }
 }
 
@@ -101,15 +105,26 @@ class ThreadController {
         int i = 1 + (int) (Math.random() * 10);
         String name = personRepo.findById(i).orElse(
                 Person.builder().name("Unknown").build()).getName();
-
+        CompletableFuture.runAsync(() -> {
+            StringWriter sw = new StringWriter();
+            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                    .setHeader(new String[]{"name", "age"})
+                    .setSkipHeaderRecord(true)
+                    .build();
+            try (final CSVPrinter printer = new CSVPrinter(sw, csvFormat)) {
+                printer.printRecord("Arthur", 14);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        });
         services.parallelStream().forEach(service -> {
             System.out.println(service.message(new SomeData("data1")));
         });
 
-        DaggerSampleService d = ModuleLoader.getContext().<DaggerSampleService>getModularServices(DaggerSampleService.class).get(0);
+        DaggerSampleService d = Modular.<DaggerSampleService>getModularServices(DaggerSampleService.class).get(0);
         d.test();
 
-        Service2 service2 = ModuleLoader.getContext().<Service2>getModularServices(Service2.class).get(0);
+        Service2 service2 = Modular.<Service2>getModularServices(Service2.class).get(0);
         service2.test();
 //		String name = "Unknown";
 //        String name = redisTemplate.opsForValue().get(String.valueOf(i));

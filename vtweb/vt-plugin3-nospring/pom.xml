@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.example</groupId>
         <artifactId>vtweb</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
 
     <artifactId>vt-plugin-3-nospring</artifactId>
@@ -20,9 +20,14 @@
 
     <dependencies>
         <dependency>
+            <groupId>io.github.nhtuan10</groupId>
+            <artifactId>modular-impl</artifactId>
+            <version>0.0.1</version>
+        </dependency>
+        <dependency>
             <groupId>com.example</groupId>
             <artifactId>vt-common</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>

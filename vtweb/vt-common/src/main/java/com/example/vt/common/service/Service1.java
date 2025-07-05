@@ -1,7 +1,7 @@
 package com.example.vt.common.service;
 
-import com.example.vt.modular.annotation.ModularMethod;
-import com.example.vt.modular.annotation.ModularService;
+import io.github.nhtuan10.modular.api.annotation.ModularMethod;
+import io.github.nhtuan10.modular.api.annotation.ModularService;
 
 @ModularService
 public interface Service1 {

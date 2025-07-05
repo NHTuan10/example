@@ -1,5 +1,7 @@
 package com.example.vt.plugin2;
 
+import com.example.vt.common.service.DaggerSampleService;
+import io.github.nhtuan10.modular.api.Modular;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +11,9 @@ public class Application {
 
     public static void main(String[] args) throws InterruptedException {
         SpringApplication.run(Application.class, args);
+        DaggerSampleService d = Modular.getModularServices(DaggerSampleService.class).get(0);
+        System.out.println(d);
+        d.test();
 //        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 //            latch.countDown();
 //        }));
