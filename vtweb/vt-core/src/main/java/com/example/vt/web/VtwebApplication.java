@@ -25,6 +25,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,7 +76,7 @@ class AppConfig {
     @Bean
     List<Service1> services() throws InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
-        return Modular.<Service1>getModularServicesFromSpring("anotherService1", Service1.class);
+        return Modular.getModularServicesFromSpring("anotherService1", Service1.class);
     }
 }
 
@@ -98,8 +99,8 @@ class ThreadController {
     @Autowired
     List<Service1> services;
 
-    @GetMapping("/name")
-    public String getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+    @GetMapping(value = "/name", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    public ResultData getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 //		throw new RuntimeException("This is a test exception");
 //		Thread.sleep(1000);
         int i = 1 + (int) (Math.random() * 10);
@@ -108,7 +109,7 @@ class ThreadController {
         CompletableFuture.runAsync(() -> {
             StringWriter sw = new StringWriter();
             CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader(new String[]{"name", "age"})
+                    .setHeader("name", "age")
                     .setSkipHeaderRecord(true)
                     .build();
             try (final CSVPrinter printer = new CSVPrinter(sw, csvFormat)) {
@@ -121,16 +122,27 @@ class ThreadController {
             System.out.println(service.message(new SomeData("data1")));
         });
 
-        DaggerSampleService d = Modular.<DaggerSampleService>getModularServices(DaggerSampleService.class).get(0);
+        DaggerSampleService d = Modular.getModularServices(DaggerSampleService.class).get(0);
         d.test();
 
-        Service2 service2 = Modular.<Service2>getModularServices(Service2.class).get(0);
+        Service2 service2 = Modular.getModularServices(Service2.class).get(0);
         service2.test();
+
+//        Modular.getModularServices("sampleServiceImpl" , Service1.class, "vt-plugin2", ExternalContainer.SPRING, true)
+//                .forEach(s -> s.message(new SomeData("data1")));
+        Modular.getModularServicesFromSpring("sampleServiceImpl", Service1.class, "vt-plugin2")
+                .forEach(s -> s.message(new SomeData("data1")));
 //		String name = "Unknown";
 //        String name = redisTemplate.opsForValue().get(String.valueOf(i));
 //        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
-        return Thread.currentThread() + ", Person Name: " + name;
+//        return new ResultData(Thread.currentThread() ,  " Person Name: " + name);
+        return new ResultData(Thread.currentThread().getName(), name);
     }
+
+    record ResultData(String threadName, String personName) {
+    }
+
+    ;
 
     @EventListener(ApplicationReadyEvent.class)
     public void loadDataToRedisCache() {

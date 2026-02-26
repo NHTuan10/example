@@ -14,7 +14,7 @@
         <dependency>
             <groupId>io.github.nhtuan10</groupId>
             <artifactId>modular-api</artifactId>
-            <version>0.0.1</version>
+            <version>${modularVersion}</version>
         </dependency>
     </dependencies>
     <properties>
