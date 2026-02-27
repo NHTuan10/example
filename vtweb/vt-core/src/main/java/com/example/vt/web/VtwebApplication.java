@@ -26,9 +26,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -81,7 +79,7 @@ class AppConfig {
 }
 
 @RestController
-@RequestMapping("/thread")
+@RequestMapping("/")
 class ThreadController {
     @Autowired
     PersonRepo personRepo;
@@ -142,7 +140,12 @@ class ThreadController {
     record ResultData(String threadName, String personName) {
     }
 
-    ;
+    @PostMapping(value = "/code")
+    public void execCode(@RequestBody String code) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+        final String CLASSNAME = "GeneratedClass";
+        DynamicCompilerExample.execCode(CLASSNAME, code);
+
+    }
 
     @EventListener(ApplicationReadyEvent.class)
     public void loadDataToRedisCache() {
