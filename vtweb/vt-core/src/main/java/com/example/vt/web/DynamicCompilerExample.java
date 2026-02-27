@@ -1,5 +1,10 @@
 package com.example.vt.web;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
+import io.github.nhtuan10.modular.api.classloader.ModularClassLoader;
+import org.springframework.context.ApplicationContext;
+
 import javax.tools.*;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -9,10 +14,19 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class DynamicCompilerExample {
 
-    public static String execCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    public static String execGroovyCode(String sourceCode, ApplicationContext applicationContext) {
+        Binding binding = new Binding();
+        binding.setVariable("applicationContext", applicationContext);
+        GroovyShell shellWithBinding = new GroovyShell(binding);
+        Object message = shellWithBinding.evaluate(sourceCode);
+        return Objects.toString(message);
+    }
+
+    public static String execJavaCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
 //        final String CLASSNAME = "GeneratedClass";
 //        String sourceCode =
 ////            "package com.example.vt.web;\n" +
@@ -36,15 +50,25 @@ public class DynamicCompilerExample {
         DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 
         // 4. Wrap the source code string in a SimpleJavaFileObject
-        JavaFileObject file = new JavaSourceFromString("GeneratedClass", sourceCode);
+        JavaFileObject file = new JavaSourceFromString(className, sourceCode);
         Iterable<? extends JavaFileObject> compilationUnits = Arrays.asList(file);
+
+        ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
+        final String classPath;
+        if (currentClassLoader instanceof ModularClassLoader) {
+            classPath = ((ModularClassLoader) currentClassLoader).getClassPath();
+        } else if (currentClassLoader.getParent() instanceof ModularClassLoader) {
+            classPath = ((ModularClassLoader) currentClassLoader.getParent()).getClassPath();
+        } else {
+            classPath = System.getProperty("java.class.path");
+        }
 
         // 5. Create a compilation task
         JavaCompiler.CompilationTask task = compiler.getTask(
                 null, // standard output for errors (use null for default System.err)
                 fileManager, // file manager (use null for standard)
                 diagnostics,
-                null, // options (e.g., classpath settings)
+                Arrays.asList("-g", "-classpath", classPath), // options (e.g., classpath settings)
                 null, // classes
                 compilationUnits);
 
@@ -71,7 +95,7 @@ public class DynamicCompilerExample {
 //                Thread.currentThread().getContextClassLoader() // Share current dependencies
 //        );
             byte[] bytecode = fileManager.outputObject.outputStream.toByteArray();
-            ClassLoader classLoader = new ClassLoader() {
+            ClassLoader classLoader = new ClassLoader(Thread.currentThread().getContextClassLoader()) {
                 Class c = defineClass(className, bytecode, 0, bytecode.length);
             };
 
@@ -79,8 +103,8 @@ public class DynamicCompilerExample {
             Class<?> clazz = classLoader.loadClass(className);
             Object instance = clazz.getDeclaredConstructor().newInstance();
             Method method = clazz.getMethod("exec");
-            method.invoke(instance);
-            return "Compilation successful!\n" + sb;
+            String resp = Objects.toString(method.invoke(instance));
+            return "Compilation successful!\n" + sb + "\nResult: " + resp;
         } else {
             System.out.println("Compilation failed:");
             return "Compilation failed: " + sb;
@@ -95,12 +119,12 @@ public class DynamicCompilerExample {
 //            "package com.example.vt.web;\n" +
                 "import org.apache.commons.lang3.StringUtils;\n" +
                         "public class " + CLASSNAME + "{\n" +
-                        "    public void exec() {\n" +
+                        "    public String exec() {\n" +
                         "        System.out.println(\"Hello, dynamic compilation!\");\n" +
                         "StringUtils.isBlank(\"abc\");\n" +
                         "    }\n" +
                         "}";
-        execCode(CLASSNAME, sourceCode);
+        execJavaCode(CLASSNAME, sourceCode);
     }
 
     // Helper class to represent a source code string as a JavaFileObject

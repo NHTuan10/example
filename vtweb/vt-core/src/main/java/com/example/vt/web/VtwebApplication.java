@@ -54,6 +54,91 @@ public class VtwebApplication {
 //        });
         Thread.currentThread().getContextClassLoader();
     }
+
+    @RestController
+    @RequestMapping("/")
+    public static class ThreadController {
+        @Autowired
+        PersonRepo personRepo;
+
+        @Autowired
+        RedisPersonRepo redisPersonRepo;
+
+        @Autowired
+        RedisTemplate<String, String> redisTemplate;
+
+        //    @Autowired
+        public static ApplicationContext applicationContext;
+
+        //    @Lazy
+        @Autowired
+        List<Service1> services;
+
+        public ThreadController(@Autowired ApplicationContext applicationContext) {
+            ThreadController.applicationContext = applicationContext;
+        }
+
+        @GetMapping(value = "/name", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+        public ResultData getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
+//		throw new RuntimeException("This is a test exception");
+//		Thread.sleep(1000);
+            int i = 1 + (int) (Math.random() * 10);
+            String name = personRepo.findById(i).orElse(
+                    Person.builder().name("Unknown").build()).getName();
+            CompletableFuture.runAsync(() -> {
+                StringWriter sw = new StringWriter();
+                CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
+                        .setHeader("name", "age")
+                        .setSkipHeaderRecord(true)
+                        .build();
+                try (final CSVPrinter printer = new CSVPrinter(sw, csvFormat)) {
+                    printer.printRecord("Arthur", 14);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            services.parallelStream().forEach(service -> {
+                System.out.println(service.message(new SomeData("data1")));
+            });
+
+            DaggerSampleService d = Modular.getModularServices(DaggerSampleService.class).get(0);
+            d.test();
+
+            Service2 service2 = Modular.getModularServices(Service2.class).get(0);
+            service2.test();
+
+//        Modular.getModularServices("sampleServiceImpl" , Service1.class, "vt-plugin2", ExternalContainer.SPRING, true)
+//                .forEach(s -> s.message(new SomeData("data1")));
+            Modular.getModularServicesFromSpring("sampleServiceImpl", Service1.class, "vt-plugin2")
+                    .forEach(s -> s.message(new SomeData("data1")));
+//		String name = "Unknown";
+//        String name = redisTemplate.opsForValue().get(String.valueOf(i));
+//        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
+//        return new ResultData(Thread.currentThread() ,  " Person Name: " + name);
+            return new ResultData(Thread.currentThread().getName(), name);
+        }
+
+        record ResultData(String threadName, String personName) {
+        }
+
+        @PostMapping(value = "/code")
+        public String execCode(@RequestBody String code) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+            final String CLASSNAME = "GeneratedClass";
+//            return DynamicCompilerExample.execJavaCode(CLASSNAME, code);
+            return DynamicCompilerExample.execGroovyCode(code, applicationContext);
+        }
+
+        @EventListener(ApplicationReadyEvent.class)
+        public void loadDataToRedisCache() {
+            for (int i = 1; i <= 10; i++) {
+                redisTemplate.opsForValue().set(String.valueOf(i), "John Doe " + i);
+            }
+            RedisPerson p = new RedisPerson("11", "Jane 11", 11);
+            redisPersonRepo.save(p);
+        }
+
+
+    }
 }
 
 @Configuration
@@ -78,83 +163,3 @@ class AppConfig {
     }
 }
 
-@RestController
-@RequestMapping("/")
-class ThreadController {
-    @Autowired
-    PersonRepo personRepo;
-
-    @Autowired
-    RedisPersonRepo redisPersonRepo;
-
-    @Autowired
-    RedisTemplate<String, String> redisTemplate;
-
-    @Autowired
-    ApplicationContext applicationContext;
-
-    //    @Lazy
-    @Autowired
-    List<Service1> services;
-
-    @GetMapping(value = "/name", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResultData getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
-//		throw new RuntimeException("This is a test exception");
-//		Thread.sleep(1000);
-        int i = 1 + (int) (Math.random() * 10);
-        String name = personRepo.findById(i).orElse(
-                Person.builder().name("Unknown").build()).getName();
-        CompletableFuture.runAsync(() -> {
-            StringWriter sw = new StringWriter();
-            CSVFormat csvFormat = CSVFormat.DEFAULT.builder()
-                    .setHeader("name", "age")
-                    .setSkipHeaderRecord(true)
-                    .build();
-            try (final CSVPrinter printer = new CSVPrinter(sw, csvFormat)) {
-                printer.printRecord("Arthur", 14);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        services.parallelStream().forEach(service -> {
-            System.out.println(service.message(new SomeData("data1")));
-        });
-
-        DaggerSampleService d = Modular.getModularServices(DaggerSampleService.class).get(0);
-        d.test();
-
-        Service2 service2 = Modular.getModularServices(Service2.class).get(0);
-        service2.test();
-
-//        Modular.getModularServices("sampleServiceImpl" , Service1.class, "vt-plugin2", ExternalContainer.SPRING, true)
-//                .forEach(s -> s.message(new SomeData("data1")));
-        Modular.getModularServicesFromSpring("sampleServiceImpl", Service1.class, "vt-plugin2")
-                .forEach(s -> s.message(new SomeData("data1")));
-//		String name = "Unknown";
-//        String name = redisTemplate.opsForValue().get(String.valueOf(i));
-//        return (service1 != null ? service1.message() : "") + " " + Thread.currentThread().toString() + ", Person Name: " + name;
-//        return new ResultData(Thread.currentThread() ,  " Person Name: " + name);
-        return new ResultData(Thread.currentThread().getName(), name);
-    }
-
-    record ResultData(String threadName, String personName) {
-    }
-
-    @PostMapping(value = "/code")
-    public String execCode(@RequestBody String code) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
-        final String CLASSNAME = "GeneratedClass";
-        return DynamicCompilerExample.execCode(CLASSNAME, code);
-
-    }
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void loadDataToRedisCache() {
-        for (int i = 1; i <= 10; i++) {
-            redisTemplate.opsForValue().set(String.valueOf(i), "John Doe " + i);
-        }
-        RedisPerson p = new RedisPerson("11", "Jane 11", 11);
-        redisPersonRepo.save(p);
-    }
-
-
-}
