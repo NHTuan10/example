@@ -12,7 +12,7 @@ import java.util.Arrays;
 
 public class DynamicCompilerExample {
 
-    public static void execCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
+    public static String execCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
 //        final String CLASSNAME = "GeneratedClass";
 //        String sourceCode =
 ////            "package com.example.vt.web;\n" +
@@ -28,7 +28,7 @@ public class DynamicCompilerExample {
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         if (compiler == null) {
             System.err.println("JDK not found. Requires a JDK, not just a JRE.");
-            return;
+            return null;
         }
         CustomFileManager fileManager = new CustomFileManager(compiler.getStandardFileManager(null, null, null));
 
@@ -50,32 +50,42 @@ public class DynamicCompilerExample {
 
         // 6. Perform the compilation
         boolean success = task.call();
-
+        StringBuilder sb = new StringBuilder();
+        for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
+            sb.append(diagnostic.getKind() + " ");
+            sb.append(diagnostic.getCode() + "\n");
+            sb.append("At " + diagnostic.getPosition() + "; from ");
+            sb.append(diagnostic.getStartPosition() + " to ");
+            sb.append(diagnostic.getEndPosition() + "\n");
+            sb.append(diagnostic.getSource() + "\n");
+            sb.append(diagnostic.getMessage(null) + "\n");
+        }
         // 7. Check the result and print diagnostics
         if (success) {
             System.out.println("Compilation successful!");
             // Further steps would involve a custom ClassLoader to load and use the class
-        } else {
-            System.out.println("Compilation failed:");
-            for (Diagnostic diagnostic : diagnostics.getDiagnostics()) {
-                System.out.println(diagnostic.getKind() + ": " + diagnostic.getMessage(null));
-            }
-        }
-        // 2. Use a URLClassLoader with the current classpath
+
+            // 2. Use a URLClassLoader with the current classpath
 //        URLClassLoader classLoader = new URLClassLoader(
 //                new URL[]{},
 //                Thread.currentThread().getContextClassLoader() // Share current dependencies
 //        );
-        byte[] bytecode = fileManager.outputObject.outputStream.toByteArray();
-        ClassLoader classLoader = new ClassLoader() {
-            Class c = defineClass(className, bytecode, 0, bytecode.length);
-        };
+            byte[] bytecode = fileManager.outputObject.outputStream.toByteArray();
+            ClassLoader classLoader = new ClassLoader() {
+                Class c = defineClass(className, bytecode, 0, bytecode.length);
+            };
 
 // 3. Load and execute
-        Class<?> clazz = classLoader.loadClass(className);
-        Object instance = clazz.getDeclaredConstructor().newInstance();
-        Method method = clazz.getMethod("exec");
-        method.invoke(instance);
+            Class<?> clazz = classLoader.loadClass(className);
+            Object instance = clazz.getDeclaredConstructor().newInstance();
+            Method method = clazz.getMethod("exec");
+            method.invoke(instance);
+            return "Compilation successful!\n" + sb;
+        } else {
+            System.out.println("Compilation failed:");
+            return "Compilation failed: " + sb;
+        }
+
     }
 
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {

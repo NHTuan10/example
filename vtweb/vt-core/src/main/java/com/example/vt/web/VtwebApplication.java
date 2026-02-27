@@ -97,7 +97,7 @@ class ThreadController {
     @Autowired
     List<Service1> services;
 
-    @GetMapping(value = "/name", produces = {MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE})
+    @GetMapping(value = "/name", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
     public ResultData getThreadName() throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 //		throw new RuntimeException("This is a test exception");
 //		Thread.sleep(1000);
@@ -141,9 +141,9 @@ class ThreadController {
     }
 
     @PostMapping(value = "/code")
-    public void execCode(@RequestBody String code) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
+    public String execCode(@RequestBody String code) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException, InstantiationException {
         final String CLASSNAME = "GeneratedClass";
-        DynamicCompilerExample.execCode(CLASSNAME, code);
+        return DynamicCompilerExample.execCode(CLASSNAME, code);
 
     }
 
