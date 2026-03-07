@@ -49,8 +49,6 @@ public class VtwebApplication {
     //    static Logger log = LoggerFactory.getLogger(VtwebApplication.class);
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
-//        log.info("Test new method");
-
         SpringApplication.run(VtwebApplication.class, args);
 //        System.out.println("Test new method");
 //        ModularContext context = ModuleLoader.getContext();
