@@ -6,13 +6,16 @@ import com.example.vt.common.service.Service2;
 import com.example.vt.common.service.SomeData;
 import com.example.vt.web.entity.Person;
 import com.example.vt.web.entity.RedisPerson;
+import com.example.vt.web.entity.Vet;
 import com.example.vt.web.repo.PersonRepo;
 import com.example.vt.web.repo.RedisPersonRepo;
+import com.example.vt.web.repo.VetRepo;
 import io.github.nhtuan10.modular.api.Modular;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -31,7 +34,9 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 //@SpringBootConfiguration
@@ -54,6 +59,29 @@ public class VtwebApplication {
 //        });
         Thread.currentThread().getContextClassLoader();
     }
+
+    @Bean
+    public CommandLineRunner clr(VetRepo vetRepository) {
+        return args -> {
+            vetRepository.deleteAll();
+
+            Vet john = new Vet(UUID.randomUUID(), "John", "Doe", new HashSet<>(List.of("surgery")));
+            Vet jane = new Vet(UUID.randomUUID(), "Jane", "Doe", new HashSet<>(List.of("radiology, surgery")));
+
+            Vet savedJohn = vetRepository.save(john);
+            vetRepository.save(jane);
+
+            vetRepository.findAll()
+                    .forEach(v -> log.info("Vet: {}", v.getFirstName()));
+
+            vetRepository.findById(savedJohn.getId())
+                    .ifPresent(v -> log.info("Vet by id: {}", v.getFirstName()));
+
+            Vet j = vetRepository.findByFirstName("John");
+            log.info("Vet by name: {}", j);
+        };
+    }
+
 
     @RestController
     @RequestMapping("/")
