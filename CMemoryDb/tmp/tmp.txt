@@ -1,0 +1,77 @@
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=1685101209800625 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=59193:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 35842
+Total quantity: 7500000000
+7500000000, time taken: 8087
+
+Process finished with exit code 0
+
+
+with string as primitive
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=7701783087625 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=55400:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 5122
+Total quantity: 7500000000
+7500000000, time taken: 1537
+
+Process finished with exit code 0
+
+OFfHeap
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=8069982193791 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=55652:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 14277
+Total quantity: 7500000000
+7500000000, time taken: 8524
+
+Process finished with exit code 0
+
+with string as primitive
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=20874857317458 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=64595:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 8146
+Total quantity: 428571435
+428571435, time taken: 2871
+
+Process finished with exit code 0
+
+
+With Bitmap query
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=20919588142833 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=64637:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 8066
+Total quantity: 428571435
+428571435, time taken: 1269
+
+Process finished with exit code 0
+
+100 millions with index using map of object list
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=82571263458041 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=55278:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 734
+Index time taken: 362946
+Total quantity: 42857145
+42857145, time taken: 4253
+
+Process finished with exit code 0
+
+500 millions with index using array of Java Array list
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=94317359977916 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=62293:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 3968
+Index time taken: 14288
+Total quantity: 214285725
+214285725, time taken: 692
+
+Process finished with exit code 0
+
+500 millions with index using array of Simple Array list
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=95028394773791 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=62701:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 4725
+Index time taken: 3896
+Total quantity: 214285725
+214285725, time taken: 431
+
+Process finished with exit code 0
+
+1 billion with index using array of Simple Array list
+/Users/tuan/Library/Java/JavaVirtualMachines/openjdk-23.0.2/Contents/Home/bin/java -Dvisualvm.id=95079729120625 -Xmx16g -javaagent:/Applications/IntelliJ IDEA.app/Contents/lib/idea_rt.jar=62738:/Applications/IntelliJ IDEA.app/Contents/bin -Dfile.encoding=UTF-8 -Dsun.stdout.encoding=UTF-8 -Dsun.stderr.encoding=UTF-8 -classpath /Users/tuan/Library/CloudStorage/OneDrive-Personal/CS/Java/example/CMemoryDb/target/classes com.gmail.nhtuan10.CMemoryDb
+pump time taken: 8537
+Index time taken: 8298
+Total quantity: 428571435
+428571435, time taken: 712
+
+Process finished with exit code 0
+

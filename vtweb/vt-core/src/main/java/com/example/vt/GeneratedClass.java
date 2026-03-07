@@ -8,10 +8,10 @@ import org.slf4j.LoggerFactory;
 public class GeneratedClass {
     private static Logger log = LoggerFactory.getLogger(GeneratedClass.class);
 
-    public void exec() {
+    public String exec() {
         System.out.println("Hello, dynamic compilation!");
         StringUtils.isBlank("abc");
         log.info(VtwebApplication.ThreadController.applicationContext.toString());
-        //return "hello there!" ;
+        return "hello there!";
     }
 }
