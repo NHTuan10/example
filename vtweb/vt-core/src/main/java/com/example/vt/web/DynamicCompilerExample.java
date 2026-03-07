@@ -27,7 +27,6 @@ public class DynamicCompilerExample {
     }
 
     public static String execJavaCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
-//        final String CLASSNAME = "GeneratedClass";
 //        String sourceCode =
 ////            "package com.example.vt.web;\n" +
 //                "import org.apache.commons.lang3.StringUtils;\n" +
