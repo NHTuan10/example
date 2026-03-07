@@ -27,15 +27,6 @@ public class DynamicCompilerExample {
     }
 
     public static String execJavaCode(final String className, final String sourceCode) throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException, InstantiationException {
-//        String sourceCode =
-////            "package com.example.vt.web;\n" +
-//                "import org.apache.commons.lang3.StringUtils;\n" +
-//                        "public class " + CLASSNAME + "{\n" +
-//                        "    public void exec() {\n" +
-//                        "        System.out.println(\"Hello, dynamic compilation!\");\n" +
-//                        "StringUtils.isBlank(\"abc\");\n" +
-//                        "    }\n" +
-//                        "}";
 
         // 2. Get the Java compiler
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
