@@ -50,7 +50,6 @@ public class VtwebApplication {
     public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         SpringApplication.run(VtwebApplication.class, args);
-//        System.out.println("Test new method");
 //        ModularContext context = ModuleLoader.getContext();
 //        context.<Service1>getModularServices(Service1.class).forEach(service -> {
 //            System.out.println(service.message(new SomeData("data1")));
